@@ -11,7 +11,9 @@ package Dispatcher;
 
 import Annotation_Aop_Ioc.*;
 import Dispatcher.DispatchInterface.DispatchInstance;
+import JDK_Automatic.FindEnhanceFunction;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -24,23 +26,45 @@ import java.lang.reflect.Method;
  * @since 1.0.0
  */
 public class Dispatch_Instance extends Dispatcher_Parent implements DispatchInstance {
-
+    private FindEnhanceFunction fef = new FindEnhanceFunction();
     @Override
     public void Instance() {
         for (String filename : filesname) {
             String fn = filename.replace(".class","");
             try {
                 Class clazz = Class.forName(fn);
-                if (clazz.isAnnotationPresent(Service.class)) {
-                    Object object = clazz.newInstance();
-                    Service service = (Service) clazz.getAnnotation(Service.class);
+                /*
+                    针对于类上面的注释的实现
+                 */
+                Annotation[] annotations = clazz.getAnnotations();
+                if (annotations.length!=0) {
+                    try {
+                        Object object = clazz.newInstance();
+                        for (Annotation annotation : annotations) {
+                            //如果不是默认的Service注解，那就一定是自定义注解
+                            if (annotation instanceof Service) {
+                                Service service = (Service) clazz.getAnnotation(Service.class);
 
-                    iocmap.put(service.value(),object);
-                    //如果开启了aop的模式那么就进行增强
-                    if (Aop_or_Ioc == 1) {
-                        if (iscreateaop(clazz)){
-                            aopmap.put(service.value(), object);
+                                iocmap.put(service.value(), object);
+                                //如果开启了aop的模式那么就进行增强
+                                if (Aop_or_Ioc == 1) {
+                                    if (iscreateaop(clazz)) {
+                                        aopmap.put(service.value(), object);
+                                    }
+                                }
+                            } else { //开始自定义注解
+                                String value = fef.getValue(clazz);
+                                iocmap.put(value, object);
+                                //如果开启了aop的模式那么就进行增强
+                                if (Aop_or_Ioc == 1) {
+                                    if (iscreateaop(clazz)) {
+                                        aopmap.put(value, object);
+                                    }
+                                }
+                            }
                         }
+                    }catch (Exception e){
+                        continue;
                     }
                 }
                 if (iscreateioc(clazz)){
@@ -58,11 +82,11 @@ public class Dispatch_Instance extends Dispatcher_Parent implements DispatchInst
      */
     public boolean iscreateioc(Class clazz){
         Field[] declaredFields = clazz.getDeclaredFields();
-        for (Field method : declaredFields) {
+        for (Field field : declaredFields) {
             //如果遍历到有属性有着这个注释那么就将其放置到icomap中去。
-            if (method.isAnnotationPresent(MAutowrite.class)) {
+            Annotation[] annotations = field.getAnnotations();
+            if (annotations.length!=0)
                 return true;
-            }
         }
         return false;
     }
@@ -74,9 +98,9 @@ public class Dispatch_Instance extends Dispatcher_Parent implements DispatchInst
         for (Method method : methods) {
             //遍历每一个方法如果包含其中一种注解那么就对这个类做aop处理。
             //这么做的是防止有的Service没有编写需要被增强的注释。
-            if (method.isAnnotationPresent(looparound.class) | method.isAnnotationPresent(before.class) | method.isAnnotationPresent(after.class)) {
+            Annotation[] annotations = method.getAnnotations();
+            if (annotations.length!=0)
                 return true;
-            }
         }
         return false;
     }

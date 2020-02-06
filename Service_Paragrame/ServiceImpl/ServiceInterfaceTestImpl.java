@@ -12,6 +12,7 @@ package Service_Paragrame.ServiceImpl;
 import Annotation_Aop_Ioc.Service;
 import Annotation_Aop_Ioc.before;
 import Annotation_Aop_Ioc.looparound;
+import Annotation_Aop_Ioc.newafter;
 import Service_Paragrame.ServiceInterface.ServiceInterfaceTest;
 
 /**
@@ -25,7 +26,7 @@ import Service_Paragrame.ServiceInterface.ServiceInterfaceTest;
 @Service("ServiceInterfaceTestImpl")
 public class ServiceInterfaceTestImpl implements ServiceInterfaceTest {
     @Override
-    @looparound("Enhance_Functions.LoopAround.LoopAround_test1")
+    @newafter("Enhance_Functions.newafter.newafterExample")
     public void query(String name) {
         System.out.println("你的名字："+name);
     }

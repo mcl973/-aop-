@@ -15,6 +15,7 @@ import Annotation_Aop_Ioc.looparound;
 
 import Enhance_Functions.BseInterface;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
@@ -34,6 +35,7 @@ public class Mcl_Invocation_Handler extends Mcl_Handler implements InvocationHan
     //得到此时这个aop的状态
     /*
         在这里可以通过使用注释中的value方法提取出需要增强的方法
+        支持自定的注解，这里查找的是函数上的自定义的注解
      */
     public BseInterface getaopstate(Method method1){
         Method method = getOriginMethod(method1);
@@ -44,6 +46,9 @@ public class Mcl_Invocation_Handler extends Mcl_Handler implements InvocationHan
                 return fef.getafter(method);
             } else if (method.isAnnotationPresent(before.class)) {
                 return fef.getbefore(method);
+            }else{
+                Annotation exterFunctionAnnotation = fef.getExterFunctionAnnotation(method);
+                return (BseInterface) fef.getEnhanceObject(fef.getAnnotationValue(exterFunctionAnnotation));
             }
         }
         return null;

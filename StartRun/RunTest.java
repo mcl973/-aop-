@@ -22,7 +22,7 @@ import Dispatcher.Dispatcher;
  */
 public class RunTest {
     public static void main(String[] args) {
-        new Dispatcher();
+        new Dispatcher(1);
         AutowriteTest.serviceInterfaceTest.query("毛从雷");
     }
 }
